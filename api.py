@@ -59,7 +59,7 @@ def generate_questions():
         pdf_path = temp_pdf.name
         pdf_file.save(pdf_path)
 
-    input_text = extract_text_from_pdf(pdf_path)
+    input_text = extract_text_from_pdf(pdf_path).replace('\n', ' ')
 
     if not input_text:
         return jsonify({"error": "No text extracted from PDF"}), 400

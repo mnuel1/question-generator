@@ -241,16 +241,16 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
 
         Question = dec.replace("question:", "")
         Question = Question.strip()
-        individual_question["question_statement"] = Question
+        individual_question["question"] = Question
         individual_question["question_type"] = "mcq"
-        individual_question["answer"] = val
+        individual_question["right_answer"] = val
         individual_question["id"] = index+1
-        individual_question["options"], __ = get_options(val, sense2vec)
-        individual_question["options"] =  filter_phrases(individual_question["options"], 10,normalized_levenshtein)
+        individual_question["distractor"], __ = get_options(val, sense2vec)
+        individual_question["distractor"] =  filter_phrases(individual_question["distractor"], 10,normalized_levenshtein)
         index = 3
-        individual_question["options"] = individual_question["options"][:index]        
+        individual_question["distractor"] = individual_question["distractor"][:index]        
      
-        if len(individual_question["options"])>0:
+        if len(individual_question["distractor"])>0:
             output_array["questions"].append(individual_question)
 
     return output_array
@@ -286,9 +286,9 @@ def generate_normal_questions(keyword_sent_mapping,device,tokenizer,model):  #fo
         Question= dec.replace('question:', '')
         Question= Question.strip()
 
-        individual_quest['question_statement']= Question
+        individual_quest['question']= Question
         individual_quest["question_type"] = "short"
-        individual_quest['answer']= val
+        individual_quest['right_answer']= val
         individual_quest["id"] = index+1
             
         output_array["questions"].append(individual_quest)

@@ -254,9 +254,9 @@ class BoolQGen:
 
             questions_and_answers.append((question, bool_answer))
 
-            individual_quest['question_statement']= question
+            individual_quest['question']= question
             individual_quest["question_type"] = "boolean"
-            individual_quest['answer']= bool_answer
+            individual_quest['right_answer']= bool_answer
             individual_quest["id"] = index+1
 
             output_array["questions"].append(individual_quest)
