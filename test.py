@@ -3,20 +3,26 @@ from pprint import pprint
 # nltk.download('stopwords')
 from Questgen import main
 
+# nltk.download('brown', quiet=True, force=True)
+# nltk.download('stopwords', quiet=True, force=True)
+# nltk.download('popular', quiet=True, force=True)
+
 payload = {
             "input_text": "The daisy, belonging to the family Asteraceae, is a diverse group of flowering plants known for their characteristic composite flowers, which typically feature a central disc surrounded by petal-like ray florets. Commonly found in temperate regions, daisies thrive in a variety of habitats, from grasslands to meadows, and are often associated with symbolism of innocence and purity. The most recognized species, the common daisy (Bellis perennis), is notable for its white petals and yellow center and is often seen as a lawn weed in many areas. Daisies reproduce through seeds, and their flowers attract various pollinators, including bees and butterflies, making them vital to ecosystem health. Additionally, some species possess medicinal properties, and their aesthetic appeal makes them popular in gardens and floral arrangements. Their resilience and adaptability contribute to their widespread occurrence and significance in both natural and cultivated landscapes.",
             "max_questions" : 5
         }
+#1 
 # qe= main.BoolQGen()
 # output = qe.predict_boolq(payload)
 # pprint (output)
 
-
 qg = main.QGen()
 
+#2
 # output = qg.predict_mcq(payload)
 # pprint (output)
 
+#3
 output = qg.predict_shortq(payload)
 pprint (output)
 

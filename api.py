@@ -60,7 +60,7 @@ def generate_questions():
         pdf_file.save(pdf_path)
 
     input_text = extract_text_from_pdf(pdf_path).replace('\n', ' ')
-
+    print(input_text)
     if not input_text:
         return jsonify({"error": "No text extracted from PDF"}), 400
 
@@ -72,7 +72,9 @@ def generate_questions():
         return jsonify({"error": "Invalid input parameters"}), 400
     
     questions = generate_questions_based_on_type(input_text, question_type, num_questions)
-
+    if not questions:
+        return jsonify({"error": "No questions were generated"}), 404
+    
     os.remove(pdf_path)
 
     return jsonify(questions), 200
