@@ -89,8 +89,7 @@ class QGen:
             except:
                 return final_output
             end = time.time()
-
-            final_output["statement"] = modified_text
+            
             final_output["questions"] = generated_questions["questions"]
             final_output["time_taken"] = end-start
             
@@ -102,7 +101,7 @@ class QGen:
     def predict_shortq(self, payload):
         inp = {
             "input_text": payload.get("input_text"),
-            "max_questions": payload.get("max_questions", 4)
+            "max_questions": payload.get("max_questions", 10)
         }
 
         text = inp['input_text']
@@ -112,8 +111,7 @@ class QGen:
 
 
         keywords = get_keywords(self.nlp,modified_text,inp['max_questions'],self.s2v,self.fdist,self.normalized_levenshtein,len(sentences) )
-
-
+        
         keyword_sentence_mapping = get_sentences_for_keyword(keywords, sentences)
         
         for k in keyword_sentence_mapping.keys():
@@ -125,13 +123,10 @@ class QGen:
         if len(keyword_sentence_mapping.keys()) == 0:
             print('ZERO')
             return final_output
-        else:
-            
+        else:            
             generated_questions = generate_normal_questions(keyword_sentence_mapping,self.device,self.tokenizer,self.model)
-            print(generated_questions)
-
-            
-        final_output["statement"] = modified_text
+            # print(generated_questions)
+                    
         final_output["questions"] = generated_questions["questions"]
         
         if torch.device=='cuda':
@@ -214,7 +209,7 @@ class BoolQGen:
         return random.choice([True, False])
     
     def predict_boolq(self, payload):
-        start = time.time()
+        
         inp = {
             "input_text": payload.get("input_text"),
             "max_questions": 3
@@ -250,12 +245,13 @@ class BoolQGen:
             else:
                 answer_text = None
 
-            bool_answer = self.convert_answer_to_bool(answer_text)
+            bool_answer, bool_distractor = self.convert_answer_to_bool(answer_text)
 
             questions_and_answers.append((question, bool_answer))
 
             individual_quest['question']= question
             individual_quest["question_type"] = "boolean"
+            individual_quest["distractor"] = [bool_distractor]
             individual_quest['right_answer']= bool_answer
             individual_quest["id"] = index+1
 
@@ -270,15 +266,15 @@ class BoolQGen:
         """Convert the extracted answer text to 'true' or 'false' based on sentiment analysis."""
         
         if answer_text is None or answer_text.strip() == "":
-            return "false"
+            return "false", "true"
 
         answer_text = answer_text.lower()
 
         sentiment_result = self.sentiment_pipeline(answer_text)
 
         if sentiment_result[0]['label'] == 'POSITIVE':
-            return "true"
+            return "true", "false"
         elif sentiment_result[0]['label'] == 'NEGATIVE':
-            return "false"
+            return "false", "true"
 
-        return "false"
+        return "false", "true"

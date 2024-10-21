@@ -134,14 +134,14 @@ def filter_phrases(phrase_keys,max,normalized_levenshtein ):
     if len(phrase_keys)>0:
         filtered_phrases.append(phrase_keys[0])
         for ph in phrase_keys[1:]:
-            if is_far(filtered_phrases,ph,0.7,normalized_levenshtein ):
+            if is_far(filtered_phrases,ph,0.1,normalized_levenshtein):
                 filtered_phrases.append(ph)
             if len(filtered_phrases)>=max:
                 break
     return filtered_phrases
 
 
-def get_nouns_multipartite(text):
+def get_nouns_multipartite(text, max_items):
     out = []
 
     extractor = pke.unsupervised.MultipartiteRank()
@@ -154,13 +154,11 @@ def get_nouns_multipartite(text):
     #    alpha controls the weight adjustment mechanism, see TopicRank for
     #    threshold/method parameters.
     try:
-        extractor.candidate_weighting(alpha=1.1,
-                                      threshold=0.75,
-                                      method='average')
+        extractor.candidate_weighting()
     except:
         return out
 
-    keyphrases = extractor.get_n_best(n=10)
+    keyphrases = extractor.get_n_best(max_items)
 
     for key in keyphrases:
         out.append(key[0])
@@ -190,24 +188,24 @@ def get_keywords(nlp,text,max_keywords,s2v,fdist,normalized_levenshtein,no_of_se
     doc = nlp(text)
     max_keywords = int(max_keywords)
 
-    keywords = get_nouns_multipartite(text)
-    keywords = sorted(keywords, key=lambda x: fdist[x])
-    keywords = filter_phrases(keywords, max_keywords,normalized_levenshtein )
-
+    keywords = get_nouns_multipartite(text, max_keywords)    
+    keywords = sorted(keywords, key=lambda x: fdist[x])    
+    keywords = filter_phrases(keywords, max_keywords,normalized_levenshtein )    
+    
     phrase_keys = get_phrases(doc)
     filtered_phrases = filter_phrases(phrase_keys, max_keywords,normalized_levenshtein )
 
     total_phrases = keywords + filtered_phrases
 
     total_phrases_filtered = filter_phrases(total_phrases, min(max_keywords, 2*no_of_sentences),normalized_levenshtein )
-
+   
 
     answers = []
     for answer in total_phrases_filtered:
         if answer not in answers and MCQs_available(answer,s2v):
             answers.append(answer)
 
-    answers = answers[:max_keywords]
+    answers = answers[:max_keywords]    
     return answers
 
 
@@ -220,7 +218,7 @@ def generate_questions_mcq(keyword_sent_mapping,device,tokenizer,model,sense2vec
         text = context + " " + "answer: " + answer + " </s>"
         batch_text.append(text)
 
-    encoding = tokenizer.batch_encode_plus(batch_text, pad_to_max_length=True, return_tensors="pt")
+    encoding = tokenizer.batch_encode_plus(batch_text, padding=True, return_tensors="pt")
 
 
     print ("Running model for generation")
@@ -264,7 +262,7 @@ def generate_normal_questions(keyword_sent_mapping,device,tokenizer,model):  #fo
         text = context + " " + "answer: " + answer + " </s>"
         batch_text.append(text)
 
-    encoding = tokenizer.batch_encode_plus(batch_text, pad_to_max_length=True, return_tensors="pt")
+    encoding = tokenizer.batch_encode_plus(batch_text, padding='longest', return_tensors="pt")
 
 
     print ("Running model for generation")
@@ -273,7 +271,7 @@ def generate_normal_questions(keyword_sent_mapping,device,tokenizer,model):  #fo
     with torch.no_grad():
         outs = model.generate(input_ids=input_ids,
                               attention_mask=attention_masks,
-                              max_length=150)
+                              max_length=500)
 
     output_array ={}
     output_array["questions"] =[]
